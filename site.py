@@ -125,4 +125,4 @@ def update_output(country, model_name, forecasting_size, train_end):
 
 
 if __name__ == "__main__":
-    serve(app.server, debug=True, host='0.0.0.0')
+    serve(app.server, host='0.0.0.0')
