@@ -82,8 +82,12 @@ END_IDX = 21
 FORECASTING_SIZE = 14
 
 
-app = dash.Dash()
+app = dash.Dash(external_stylesheets=['https://codepen.io/chriddyp/pen/bWLwgP.css'])
 app.layout = html.Div([
+    dcc.Markdown("""
+    # COVID-19
+    Демонстрация методов прогнозирования числа зараженных.  
+    """, style={'font-family': 'Arial, Helvetica, sans-serif'}),
     dcc.Dropdown(
         id='countries-dropdown',
         options=[{'label': x, 'value': x} for x in COUNTRIES],
@@ -94,7 +98,11 @@ app.layout = html.Div([
     ),
     dcc.Input(id="input_forecasting_size", placeholder="forecasting size", type="number"),
     dcc.Input(id="input_train_end", placeholder=f"train end (max = {DF.shape[0]})", type="number"),
-    dcc.Graph(figure=FIG, id='graph')
+    dcc.Graph(figure=FIG, id='graph'),
+    dcc.Markdown("""
+    Gleb Morgachev   
+    Tamaz Gadaev
+    """, style={"text-align": "right"})
 ])
 
 
@@ -116,4 +124,5 @@ def update_output(country, model_name, forecasting_size, train_end):
     return fig
 
 
-serve(app.server, host='0.0.0.0')
+if __name__ == "__main__":
+    serve(app.server, debug=True, host='0.0.0.0')
