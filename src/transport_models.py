@@ -41,7 +41,7 @@ class SIRBasedModel:
         return self
 
     def fit(self):
-        self.model.fit_mcmc(num_samples=200)
+        self.model.fit_mcmc(num_samples=100)
         return self
 
     def forecast(self, steps):
