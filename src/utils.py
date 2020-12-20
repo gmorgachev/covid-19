@@ -8,8 +8,8 @@ from dataclasses import dataclass
 from .transport_models import SIRBasedModel
 
 
+COUNTRIES = ["All", "Russia", "United States", "United Kingdom", "Germany", "France", "India", "Brazil", "China"]
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
-
 
 @dataclass
 class ArConfig:

@@ -40,8 +40,8 @@ class SIRBasedModel:
         self.model = self.model_class(data=self.train, **self.kwargs)
         return self
 
-    def fit(self):
-        self.model.fit_mcmc(num_samples=100)
+    def fit(self, num_samples=100):
+        self.model.fit_mcmc(num_samples=num_samples)
         return self
 
     def forecast(self, steps):

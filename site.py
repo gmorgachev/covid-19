@@ -5,11 +5,12 @@ import plotly.graph_objects as go
 
 from dataclasses import dataclass
 from pathlib import Path
+
+from pyro import poutine
 from waitress import serve
 
-from src.utils import experiment, get_data, MODELS
+from src.utils import experiment, get_data, MODELS, COUNTRIES
 
-COUNTRIES = ["All", "Russia", "United States", "United Kingdom", "Germany", "France", "India", "Brazil", "China"]
 DATA_PATH = Path("data")
 FIG = go.Figure()
 COUNTRY = "Russia"
@@ -33,6 +34,7 @@ app.layout = html.Div([
     ),
     dcc.Input(id="input_forecasting_size", placeholder="forecasting size", type="number"),
     dcc.Input(id="input_train_end", placeholder=f"train end (max = {DF.shape[0]})", type="number"),
+    html.Button(id='submit-button-state', n_clicks=0, children='Submit'),
     dcc.Graph(figure=FIG, id='graph'),
     dcc.Markdown("""
     Gleb Morgachev   
@@ -43,22 +45,33 @@ app.layout = html.Div([
 
 @app.callback(
     dash.dependencies.Output('graph', 'figure'),
-    [dash.dependencies.Input('countries-dropdown', 'value'),
-     dash.dependencies.Input('models-dropdown', 'value'),
-     dash.dependencies.Input('input_forecasting_size', 'value'),
-     dash.dependencies.Input('input_train_end', 'value')])
-def update_output(country, model_name, forecasting_size, train_end):
-    if country is None or forecasting_size is None or train_end is None or model_name is None:
-        return FIG
-    if train_end < forecasting_size:
-        return FIG
+    dash.dependencies.Input('submit-button-state', 'n_clicks'),
+    dash.dependencies.State('countries-dropdown', 'value'),
+    dash.dependencies.State('models-dropdown', 'value'),
+    dash.dependencies.State('input_forecasting_size', 'value'),
+    dash.dependencies.State('input_train_end', 'value'))
+def update_output(n_clicks, country, model_name, forecasting_size, train_end):
+    try:
+        if country is None or forecasting_size is None or train_end is None or model_name is None:
+            FIG.update_layout(title="Choose all parameters")
+            return FIG
+        if train_end < forecasting_size:
+            FIG.update_layout(title=f"train_end < forecasting_size")
+            return FIG
 
-    model = MODELS[model_name]
-    DF = get_data(country, DATA_PATH)
+        with poutine.block():
+            model = MODELS[model_name]
+            DF = get_data(country, DATA_PATH)
 
-    fig = experiment(DF, model, int(train_end), int(forecasting_size), country)
-    fig.update_layout(title=f"{country} {model_name}")
-    return fig
+            fig = experiment(DF, model, int(train_end), int(forecasting_size), country)
+            fig.update_layout(title=f"{country} {model_name}")
+
+        return fig
+    except Exception as e:
+        print(e)
+        FIG.update_layout(title="Some problem. Please, try one more time after several minutes."
+                                "Maybe somebody else is playing with models :)")
+        return FIG
 
 
 if __name__ == "__main__":
