@@ -1,5 +1,6 @@
 import inspect
 import torch
+import pandas as pd
 
 from pyro.contrib.epidemiology.models import SimpleSIRModel, SimpleSEIRDModel, SimpleSEIRModel
 
@@ -35,12 +36,13 @@ class SIRBasedModel:
         self.kwargs = get_params(self.models[model_name], params)
         self.model_class = self.models[model_name]
 
-    def __call__(self, train):
+    def __call__(self, train, window=2):
+        train = pd.Series(train).rolling(window).mean().fillna(0).values
         self.train = torch.Tensor(train)
         self.model = self.model_class(data=self.train, **self.kwargs)
         return self
 
-    def fit(self, num_samples=100):
+    def fit(self, num_samples=200):
         self.model.fit_mcmc(num_samples=num_samples)
         return self
 

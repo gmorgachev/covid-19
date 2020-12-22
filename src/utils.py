@@ -41,8 +41,7 @@ def experiment(df, model, end, forecasting_size, country):
     test = df.iloc[end-forecasting_size-1:end, 0]
 
     res = model(train, country).fit()
-    y_pred = res.forecast(steps=forecasting_size)
-
+    y_pred = res.forecast(steps=forecasting_size)[-forecasting_size:]
     fig = go.Figure()
 
     fig.add_scatter(x=train.index, y=train.values, line={"color": "blue"}, name="train")
